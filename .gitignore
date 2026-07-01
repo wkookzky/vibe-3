@@ -1,0 +1,33 @@
+# Node
+node_modules/
+dist/
+.vite/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+.ruff_cache/
+
+# Local data and environment
+.env
+.env.*
+*.db
+*.sqlite
+*.sqlite3
+storage/
+
+# Tool caches
+.uv-cache/
+.codex/
+
+# OS and editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
