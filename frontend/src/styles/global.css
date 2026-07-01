@@ -13,6 +13,7 @@ body {
 }
 
 button,
+input,
 select,
 textarea {
   font: inherit;
@@ -167,6 +168,12 @@ button {
   padding: 8px 12px;
 }
 
+.toolbar button.active {
+  color: #fff;
+  background: #2368a2;
+  border-color: #2368a2;
+}
+
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
@@ -223,6 +230,7 @@ label {
 }
 
 select,
+input,
 textarea {
   width: 100%;
   border: 1px solid #cfd8e2;
@@ -272,17 +280,253 @@ textarea {
   background: #fff8f5;
 }
 
+.schedule-page {
+  display: grid;
+  gap: 14px;
+}
+
+.segmented-toolbar {
+  flex-wrap: wrap;
+}
+
+.inline-message,
+.empty-state {
+  color: #56616e;
+}
+
+.inline-message {
+  border: 1px solid #cfe0ef;
+  border-radius: 8px;
+  background: #f4f9fc;
+  padding: 10px 12px;
+}
+
+.schedule-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 16px;
+  align-items: start;
+}
+
+.schedule-main,
+.schedule-side {
+  min-width: 0;
+}
+
+.period-nav,
+.row-actions,
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.period-nav {
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.period-nav button,
+.row-actions button,
+.form-actions button {
+  border: 1px solid #cfd8e2;
+  border-radius: 8px;
+  background: #fff;
+  padding: 8px 10px;
+  white-space: nowrap;
+}
+
+.form-actions button:first-child {
+  color: #fff;
+  background: #2368a2;
+  border-color: #2368a2;
+}
+
+.schedule-table-wrap {
+  overflow-x: auto;
+}
+
+.schedule-table {
+  width: 100%;
+  min-width: 860px;
+  border-collapse: collapse;
+  background: #fff;
+  border: 1px solid #d9e0e7;
+  border-radius: 8px;
+}
+
+.schedule-table th,
+.schedule-table td {
+  border-bottom: 1px solid #e5ebf0;
+  padding: 10px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.schedule-table th {
+  color: #43505d;
+  background: #f2f6f9;
+  font-size: 13px;
+}
+
+.month-calendar {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  overflow: hidden;
+  border: 1px solid #d9e0e7;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.weekday-head,
+.month-cell {
+  min-width: 0;
+  border-right: 1px solid #e5ebf0;
+  border-bottom: 1px solid #e5ebf0;
+}
+
+.weekday-head {
+  padding: 9px;
+  background: #f2f6f9;
+  color: #43505d;
+  text-align: center;
+  font-size: 13px;
+}
+
+.month-cell {
+  min-height: 128px;
+  padding: 8px;
+}
+
+.month-cell.muted {
+  background: #f8fafb;
+  color: #98a3ae;
+}
+
+.date-number {
+  display: inline-grid;
+  width: 26px;
+  height: 26px;
+  place-items: center;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.month-events {
+  display: grid;
+  gap: 5px;
+  margin-top: 6px;
+}
+
+.event-chip {
+  overflow: hidden;
+  width: 100%;
+  border: 0;
+  border-left: 4px solid #2f7d66;
+  border-radius: 6px;
+  background: #eef7f3;
+  color: #1f3f35;
+  padding: 6px 7px;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.event-chip.vacation {
+  border-color: #a65f00;
+  background: #fff5e8;
+  color: #5c3906;
+}
+
+.event-chip.business_trip {
+  border-color: #2368a2;
+  background: #eef6fc;
+  color: #173e5f;
+}
+
+.event-chip.training {
+  border-color: #7a5ca6;
+  background: #f5f0fb;
+  color: #45335f;
+}
+
+.event-chip.remote {
+  border-color: #697386;
+  background: #f3f5f8;
+  color: #3e4652;
+}
+
+.event-chip.etc {
+  border-color: #8f6a52;
+  background: #f8f2ee;
+  color: #513b2e;
+}
+
+.member-list {
+  display: grid;
+  gap: 10px;
+}
+
+.member-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border: 1px solid #d9e0e7;
+  border-radius: 8px;
+  background: #f8fafb;
+  padding: 12px;
+}
+
+.member-row div:first-child {
+  display: grid;
+  gap: 4px;
+}
+
+.member-row span {
+  color: #56616e;
+  font-size: 13px;
+}
+
+.compact-form textarea {
+  min-height: 92px;
+}
+
 @media (max-width: 980px) {
   .app-shell,
   .two-column,
   .chat-layout,
-  .calendar-grid {
+  .calendar-grid,
+  .schedule-layout,
+  .month-calendar {
     grid-template-columns: 1fr;
   }
 
   .topbar,
   .section-heading,
   .integration-panel {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .month-calendar {
+    border: 0;
+    gap: 8px;
+    background: transparent;
+  }
+
+  .weekday-head {
+    display: none;
+  }
+
+  .month-cell {
+    border: 1px solid #d9e0e7;
+    border-radius: 8px;
+    background: #fff;
+  }
+
+  .member-row,
+  .period-nav {
     align-items: stretch;
     flex-direction: column;
   }

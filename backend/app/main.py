@@ -1,7 +1,7 @@
 ﻿from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.routes import chatbot, excel, health, news, schedules
+from app.api.routes import chatbot, excel, health, news, schedules, team_members
 from app.core.config import settings
 from app.db.sqlite import initialize_database
 
@@ -16,6 +16,7 @@ app.add_middleware(
 )
 
 app.include_router(health.router, prefix="/api", tags=["health"])
+app.include_router(team_members.router, prefix="/api/team-members", tags=["team-members"])
 app.include_router(schedules.router, prefix="/api/schedules", tags=["schedules"])
 app.include_router(excel.router, prefix="/api/excel", tags=["excel"])
 app.include_router(chatbot.router, prefix="/api/chatbot", tags=["chatbot"])

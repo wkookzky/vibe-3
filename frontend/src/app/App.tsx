@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { AdminPage } from "../features/admin/AdminPage";
 import { ChatbotPage } from "../features/chatbot/ChatbotPage";
 import { ExcelPage } from "../features/excel/ExcelPage";
@@ -23,15 +23,32 @@ export default function App() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    getHealth()
-      .then((data) => {
+    let isMounted = true;
+
+    async function checkHealth() {
+      try {
+        const data = await getHealth();
+        if (!isMounted) {
+          return;
+        }
         setHealth(data);
         setError(null);
-      })
-      .catch((err: Error) => {
+      } catch (err) {
+        if (!isMounted) {
+          return;
+        }
         setHealth(null);
-        setError(err.message);
-      });
+        setError(err instanceof Error ? err.message : "백엔드 연결 상태를 확인하지 못했습니다.");
+      }
+    }
+
+    void checkHealth();
+    const intervalId = window.setInterval(() => void checkHealth(), 5000);
+
+    return () => {
+      isMounted = false;
+      window.clearInterval(intervalId);
+    };
   }, []);
 
   const page = useMemo(() => {
