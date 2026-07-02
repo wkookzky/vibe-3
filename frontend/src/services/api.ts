@@ -9,10 +9,23 @@ import type {
 } from "../types/api";
 
 const API_BASE_STORAGE_KEY = "admin-superapp-api-base-url";
-const DEFAULT_API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
+const DEFAULT_API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_BASE_URL ?? "");
 
 export function normalizeApiBaseUrl(value: string): string {
-  return value.trim().replace(/\/$/, "");
+  const trimmed = value.trim().replace(/\/$/, "");
+  if (!trimmed) {
+    return "";
+  }
+
+  if (/^[a-zA-Z][a-zA-Z\d+\-.]*:\/\//.test(trimmed)) {
+    return trimmed;
+  }
+
+  if (/^(localhost|127\.0\.0\.1|0\.0\.0\.0)(:\d+)?(\/|$)/.test(trimmed)) {
+    return `http://${trimmed}`;
+  }
+
+  return `https://${trimmed}`;
 }
 
 export function getApiBaseUrl(): string {
@@ -33,12 +46,17 @@ export function setApiBaseUrl(value: string): string {
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  const headers = new Headers(options.headers);
+  if (options.body !== undefined && !(options.body instanceof FormData)) {
+    headers.set("Content-Type", "application/json");
+  }
+  if (!headers.has("Accept")) {
+    headers.set("Accept", "application/json");
+  }
+
   const response = await fetch(`${getApiBaseUrl()}${path}`, {
     ...options,
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
+    headers,
   });
 
   if (!response.ok) {

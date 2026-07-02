@@ -71,6 +71,32 @@ API 문서:
 http://localhost:8000/docs
 ```
 
+GitHub Pages 등 외부 프론트엔드에서 로컬 백엔드에 접속해야 할 때는 저장소 루트에서 백엔드와 Cloudflare Quick Tunnel을 함께 실행한다. 이 방식은 백엔드가 준비될 때까지 헬스체크한 뒤 `cloudflared tunnel --url http://127.0.0.1:8000 --no-autoupdate`를 실행하고, 생성된 `https://*.trycloudflare.com` 주소를 출력한다.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\start_backend_tunnel.ps1
+```
+
+`cloudflared.exe`가 기본 위치(`%USERPROFILE%\Downloads\cloudflared.exe`)가 아닌 곳에 있으면 경로를 지정한다.
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\start_backend_tunnel.ps1 -CloudflaredPath "C:\path\to\cloudflared.exe"
+```
+
+실행 후 출력되는 `Cloudflare Tunnel URL` 값을 프론트엔드의 백엔드 URL 입력값으로 사용한다. 터널 실행 시 CORS 허용 출처에는 로컬 Vite 주소(`http://localhost:5173`, `http://127.0.0.1:5173`, `http://localhost:5174`, `http://127.0.0.1:5174`)와 GitHub Pages 주소(`https://wkookzky.github.io`)가 포함된다.
+
+중지:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File .\scripts\stop_backend_tunnel.ps1
+```
+
+실행 로그와 PID 파일은 저장소 루트의 `.cloudflared-runtime` 디렉터리에 생성된다.
+
+- 백엔드 로그: `.cloudflared-runtime/backend.log`, `.cloudflared-runtime/backend-error.log`
+- Cloudflare 로그: `.cloudflared-runtime/cloudflared.log`, `.cloudflared-runtime/cloudflared-error.log`
+- PID 파일: `.cloudflared-runtime/backend.pid`, `.cloudflared-runtime/cloudflared.pid`
+
 ### 3.3 워커와 스케줄러
 
 엑셀 대용량 처리, 뉴스 수집, 매뉴얼 인덱싱은 백그라운드 작업으로 분리한다.
