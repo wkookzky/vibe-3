@@ -59,5 +59,26 @@ export interface NewsArticle {
   published_at: string;
   summary: string;
   url: string;
+  image_url: string;
+  category: string;
+  has_image: boolean;
   keywords: string[];
+  collected_at: string;
+}
+
+export interface NewsListResponse {
+  items: NewsArticle[];
+  page: number;
+  page_size: number;
+  total: number;
+  total_pages: number;
+}
+
+export interface NewsCollectionResponse {
+  target_date: string;
+  inserted: number;
+  updated: number;
+  total: number;
+  failed: number;
+  status: "success" | "partial" | "failed";
 }

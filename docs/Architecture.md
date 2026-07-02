@@ -10,7 +10,7 @@
 | --- | --- | --- |
 | Frontend | React, TypeScript, Vite | 업무용 단일 페이지 앱 |
 | Backend API | Python, FastAPI, Uvicorn | REST API, 파일 처리, 챗봇 요청 처리 |
-| Database | PostgreSQL | 사용자, 일정, 로그, 설정, 뉴스 메타데이터 저장 |
+| Database | SQLite(현재 구현), PostgreSQL(권장 확장) | 사용자, 일정, 뉴스 메타데이터 저장 |
 | Cache/Queue | Redis, Celery 또는 RQ | 엑셀 처리, 뉴스 수집, 문서 임베딩 비동기 작업 |
 | File Storage | 로컬 스토리지 또는 S3 호환 스토리지 | 업로드 파일, 처리 결과, 매뉴얼 원본 저장 |
 | Search/RAG | pgvector, OpenSearch, 또는 별도 Vector DB | 민원 매뉴얼 검색 기반 답변 |
@@ -229,11 +229,8 @@ Day3_rpa/
 
 주요 API:
 
-- `GET /api/news`
-- `POST /api/news/collect`
-- `GET /api/news/settings`
-- `PATCH /api/news/settings`
-- `POST /api/news/{news_id}/bookmark`
+- `GET /api/news?page=1&page_size=10`: 페이지네이션된 뉴스 목록 조회
+- `POST /api/news/collect`: 대한민국 정책브리핑 최근 기사 수집 및 upsert
 
 ### 5.7 Audit Log Module
 
@@ -302,14 +299,17 @@ Day3_rpa/
 
 | 필드 | 타입 | 설명 |
 | --- | --- | --- |
-| id | UUID | 기사 ID |
-| title | varchar | 제목 |
-| source | varchar | 언론사 |
-| published_at | timestamp | 발행 시각 |
-| url | text | 원문 링크 |
+| id | text | 기사 ID |
+| title | text | 제목 |
+| source | text | 언론사 |
+| published_at | text | 발행 시각 |
+| url | text | 원문 링크, 유니크 인덱스 대상 |
 | summary | text | 요약 |
-| keywords | text[] | 매칭 키워드 |
-| created_at | timestamp | 수집 시각 |
+| keywords | text | 쉼표로 저장된 매칭 키워드 |
+| image_url | text | 대표 이미지 URL |
+| category | text | 분류명 |
+| has_image | integer | 대표 이미지 존재 여부 |
+| collected_at | text | 수집 시각 |
 
 ## 7. 보안 요구사항
 

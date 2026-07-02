@@ -1,4 +1,4 @@
-﻿# 공공직군 행정업무 슈퍼앱 Operation
+# 공공직군 행정업무 슈퍼앱 Operation
 
 ## 1. 문서 목적
 
@@ -10,10 +10,8 @@
 
 - Node.js
 - npm
-- Python
-- Python 가상환경 도구
-- PostgreSQL
-- Redis
+- Python 3.11 이상
+- uv
 
 ### 2.2 권장 환경 변수
 
@@ -22,8 +20,8 @@
 ```env
 APP_ENV=local
 APP_SECRET_KEY=change-me
-DATABASE_URL=postgresql://user:password@localhost:5432/admin_superapp
-REDIS_URL=redis://localhost:6379/0
+DATABASE_PATH=data/app.db
+CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173
 FILE_STORAGE_PATH=./storage
 LLM_PROVIDER=openai
 LLM_API_KEY=
@@ -36,17 +34,7 @@ NEWS_COLLECT_TIME=08:00
 
 ### 3.1 프론트엔드
 
-현재 `frontend/package.json`에는 React, React DOM, Vite, TypeScript 패키지가 포함되어 있다. 개발 서버 스크립트가 없다면 다음 스크립트를 추가한다.
-
-```json
-{
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview"
-  }
-}
-```
+현재 `frontend/package.json`에는 React, React DOM, Vite, TypeScript 패키지와 `dev`, `build`, `preview`, `test` 스크립트가 포함되어 있다. TypeScript 6 기준으로 `tsconfig.json`의 `moduleResolution`은 `Bundler`를 사용하고, Vite 환경 타입은 `vite/client`로 참조한다.
 
 실행:
 
@@ -64,12 +52,11 @@ http://localhost:5173
 
 ### 3.2 백엔드
 
-백엔드는 FastAPI 기반을 권장한다. 엔트리 파일이 준비된 뒤 다음 방식으로 실행한다.
+백엔드는 FastAPI와 uv 기반으로 실행한다.
 
 ```powershell
 cd backend
-.\.venv\Scripts\activate
-uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
 ```
 
 기본 API 주소:
@@ -158,10 +145,10 @@ python -m app.workers.scheduler
 
 ### 4.4 뉴스 기사 수집
 
-1. 관리자가 수집 키워드와 제외 키워드를 등록한다.
-2. 매일 아침 예약 작업을 실행한다.
-3. 사용자는 뉴스 화면에서 수집 결과를 확인한다.
-4. 필요한 기사는 북마크하거나 팀에 공유한다.
+1. 사용자가 뉴스 화면으로 이동한다.
+2. `즉시 수집` 버튼을 눌러 대한민국 정책브리핑 최근 기사를 수집한다.
+3. 사용자는 페이지네이션된 뉴스 목록에서 제목, 출처, 발행일, 요약, 카테고리, 대표 이미지 여부를 확인한다.
+4. 필요한 기사는 원문 링크로 이동해 확인한다.
 
 운영 기준:
 
@@ -173,18 +160,19 @@ python -m app.workers.scheduler
 
 ### 5.1 프론트엔드 실행 오류
 
-#### `npm run dev` 스크립트가 없음
+#### TypeScript 타입 검사에서 `moduleResolution=node10` 경고가 오류로 처리됨
 
 원인:
 
-- `package.json`에 Vite 실행 스크립트가 정의되지 않음
+- TypeScript 6에서 `moduleResolution: "Node"`가 deprecated 처리됨
 
 대응:
 
 ```json
 {
-  "scripts": {
-    "dev": "vite"
+  "compilerOptions": {
+    "moduleResolution": "Bundler",
+    "types": ["vite/client"]
   }
 }
 ```
@@ -213,8 +201,7 @@ npm run dev -- --port 5174
 
 ```powershell
 cd backend
-.\.venv\Scripts\activate
-pip install fastapi uvicorn
+uv sync
 ```
 
 #### `ModuleNotFoundError: app`
@@ -226,7 +213,7 @@ pip install fastapi uvicorn
 대응:
 
 - `backend/app/main.py`가 존재하는지 확인한다.
-- `backend` 디렉터리에서 `uvicorn app.main:app --reload`를 실행한다.
+- `backend` 디렉터리에서 `uv run uvicorn app.main:app --reload --host 127.0.0.1 --port 8000`을 실행한다.
 
 ### 5.3 엑셀 처리 오류
 
@@ -286,19 +273,19 @@ pip install fastapi uvicorn
 
 ### 5.5 뉴스 수집 오류
 
-#### 예약 수집이 실행되지 않음
+#### 즉시 수집이 실패함
 
 원인:
 
-- 스케줄러 프로세스 미실행
-- 시간대 설정 오류
-- Redis 또는 작업 큐 장애
+- 수집 대상 사이트 요청 실패
+- 네트워크 또는 외부 사이트 응답 형식 변경
+- 수집 API 호출 중 서버 오류
 
 대응:
 
-- 스케줄러 프로세스 상태를 확인한다.
-- 서버 시간대와 `NEWS_COLLECT_TIME`을 확인한다.
-- 작업 큐 연결 상태를 확인한다.
+- `POST /api/news/collect` 응답의 `failed` 값을 확인한다.
+- 백엔드 로그에서 외부 사이트 요청 실패 여부를 확인한다.
+- 네트워크 연결과 수집 대상 페이지 구조 변경 여부를 확인한다.
 
 #### 중복 기사가 많음
 
@@ -365,5 +352,6 @@ pip install fastapi uvicorn
 - 파일 업로드 제한과 삭제 정책 확인
 - LLM API 설정 및 뉴스 수집 설정 확인
 - 헬스체크 엔드포인트 정상 여부 확인
-- 프론트엔드 빌드 성공 여부 확인
+- 프론트엔드 타입 검사와 빌드 성공 여부 확인: `npx tsc --noEmit`, `npm run build`
+- 백엔드 테스트 성공 여부 확인: `uv run pytest`
 - 주요 기능 수동 테스트 완료 여부 확인

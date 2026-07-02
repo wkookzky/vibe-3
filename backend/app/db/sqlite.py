@@ -49,8 +49,43 @@ def initialize_database() -> None:
             )
             """
         )
+        ensure_news_schema(connection)
         seed_data(connection)
 
+
+def ensure_news_schema(connection: sqlite3.Connection) -> None:
+    table_info = connection.execute("PRAGMA table_info(news_articles)").fetchall()
+    existing_columns = {row["name"] for row in table_info}
+    required_columns = {
+        "image_url": "TEXT NOT NULL DEFAULT ''",
+        "category": "TEXT NOT NULL DEFAULT '기타'",
+        "has_image": "INTEGER NOT NULL DEFAULT 0",
+        "collected_at": "TEXT NOT NULL DEFAULT ''",
+    }
+
+    for column_name, column_definition in required_columns.items():
+        if column_name not in existing_columns:
+            connection.execute(f"ALTER TABLE news_articles ADD COLUMN {column_name} {column_definition}")
+
+    connection.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_news_articles_url ON news_articles(url)")
+    connection.execute("CREATE INDEX IF NOT EXISTS idx_news_articles_published_at ON news_articles(published_at)")
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS news_collection_runs (
+            id TEXT PRIMARY KEY,
+            target_date TEXT NOT NULL,
+            trigger_type TEXT NOT NULL,
+            started_at TEXT NOT NULL,
+            finished_at TEXT NOT NULL,
+            inserted INTEGER NOT NULL DEFAULT 0,
+            updated INTEGER NOT NULL DEFAULT 0,
+            failed INTEGER NOT NULL DEFAULT 0,
+            status TEXT NOT NULL,
+            error_message TEXT NOT NULL DEFAULT ''
+        )
+        """
+    )
+    connection.execute("CREATE INDEX IF NOT EXISTS idx_news_collection_runs_target_date ON news_collection_runs(target_date)")
 
 def ensure_schedule_schema(connection: sqlite3.Connection) -> None:
     connection.execute(

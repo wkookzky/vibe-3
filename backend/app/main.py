@@ -1,9 +1,10 @@
-﻿from fastapi import FastAPI
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routes import chatbot, excel, health, news, schedules, team_members
 from app.core.config import settings
 from app.db.sqlite import initialize_database
+from app.services.news_scheduler import shutdown_news_scheduler, start_news_scheduler
 
 app = FastAPI(title=settings.app_name)
 
@@ -26,3 +27,9 @@ app.include_router(news.router, prefix="/api/news", tags=["news"])
 @app.on_event("startup")
 def on_startup() -> None:
     initialize_database()
+    start_news_scheduler()
+
+
+@app.on_event("shutdown")
+def on_shutdown() -> None:
+    shutdown_news_scheduler()

@@ -1,12 +1,20 @@
-﻿[project]
+[project]
 name = "admin-superapp-backend"
 version = "0.1.0"
 description = "FastAPI scaffold for public administration workflow super app"
 requires-python = ">=3.11"
 dependencies = [
   "fastapi",
+  "beautifulsoup4",
+  "httpx",
   "uvicorn",
-  "python-dotenv"
+  "python-dotenv",
+  "apscheduler>=3.11.3",
+]
+
+[dependency-groups]
+dev = [
+  "pytest"
 ]
 
 [tool.pytest.ini_options]

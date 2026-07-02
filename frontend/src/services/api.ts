@@ -1,16 +1,39 @@
 import type {
   HealthResponse,
-  NewsArticle,
+  NewsCollectionResponse,
+  NewsListResponse,
   ScheduleEvent,
   ScheduleEventPayload,
   TeamMember,
   TeamMemberPayload,
 } from "../types/api";
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
+const API_BASE_STORAGE_KEY = "admin-superapp-api-base-url";
+const DEFAULT_API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
+
+export function normalizeApiBaseUrl(value: string): string {
+  return value.trim().replace(/\/$/, "");
+}
+
+export function getApiBaseUrl(): string {
+  if (typeof window === "undefined") {
+    return DEFAULT_API_BASE_URL;
+  }
+  return normalizeApiBaseUrl(window.localStorage.getItem(API_BASE_STORAGE_KEY) ?? DEFAULT_API_BASE_URL);
+}
+
+export function setApiBaseUrl(value: string): string {
+  const normalized = normalizeApiBaseUrl(value);
+  if (normalized) {
+    window.localStorage.setItem(API_BASE_STORAGE_KEY, normalized);
+  } else {
+    window.localStorage.removeItem(API_BASE_STORAGE_KEY);
+  }
+  return normalized;
+}
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
+  const response = await fetch(`${getApiBaseUrl()}${path}`, {
     ...options,
     headers: {
       "Content-Type": "application/json",
@@ -89,6 +112,20 @@ export function deleteSchedule(eventId: string) {
   return request<void>(`/api/schedules/${eventId}`, { method: "DELETE" });
 }
 
-export function getNews() {
-  return request<NewsArticle[]>("/api/news");
+export function getNews(page = 1, pageSize = 10, publishedDate?: string) {
+  const search = new URLSearchParams({
+    page: String(page),
+    page_size: String(pageSize),
+  });
+  if (publishedDate) {
+    search.set("published_date", publishedDate);
+  }
+  return request<NewsListResponse>(`/api/news?${search.toString()}`);
+}
+
+export function collectNews(targetDate: string) {
+  return request<NewsCollectionResponse>("/api/news/collect", {
+    method: "POST",
+    body: JSON.stringify({ target_date: targetDate }),
+  });
 }
